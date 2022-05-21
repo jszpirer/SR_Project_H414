@@ -52,9 +52,8 @@ def test_flex():
             (3,1,2),
             (3,2,2)
             ]
-    distributions = [(1,1,2),
-            (3,1,1),
-            (3,2,1)]
+    distributions = [(3,1,2),
+            (3,2,2)]
     print('------------------------------')
     print('--Computation on flexibility--')
     print('------------------------------')
@@ -111,7 +110,7 @@ def test_scalab():
     counter=0
     init_swarm_size = 5
     d = (3, 2, 1) # To define
-    for i in [10,15]:
+    for i in range(15,20):
     #for i in range(1, 2):
         swarm_size = i*init_swarm_size
         total = sum(d[j] for j in range(len(d)))
@@ -138,7 +137,7 @@ def test_scalab():
             resume_list = [str(i),'scalability', str(new_seed), str(nb_cam), str(nb_ground), str(nb_lights), str(obj)]
             print('Computed ' + ';'.join(resume_list))
             counter += 1
-            f = open("results_scal.csv", 'a')
+            f = open("results_scalab.csv", 'a')
             f.write(','.join(resume_list)+'\n')
             f.close() 
     print('Fin des calculs')
