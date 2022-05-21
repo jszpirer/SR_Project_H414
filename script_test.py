@@ -145,7 +145,7 @@ def test_scalab():
 
 def main():
     #flex = threading.Thread(target=test_flex)
-    "flex.start()
+    #flex.start()
     scal = threading.Thread(target=test_scalab)
     scal.start()
 
