@@ -8,7 +8,7 @@
   <system threads="0"/>
   <!-- To change the random seed for each experiment repetition, you can set 'random_seed' to whatever value you like.
     If the value is set to 0, ARGoS will find a random seed for you -->
-  <experiment length="600" random_seed="8509" ticks_per_second="10"/>
+  <experiment length="600" random_seed="92823" ticks_per_second="10"/>
  </framework>
  <!-- ****************** -->
  <!-- * Loop functions * -->
@@ -114,7 +114,7 @@
    <position max="2,3,0" method="uniform" min="-2,-3,0"/>
    <orientation max="360,0,0" method="uniform" min="0,0,0"/>
    <!-- You can change the number of GroundBots changing the 'quantity' attribute -->
-   <entity base_num="1" max_trials="100" quantity="10">
+   <entity base_num="1" max_trials="100" quantity="5">
     <foot-bot id="gnd-fb" rab_range="1.25">
      <controller config="groundbot"/>
     </foot-bot>
@@ -124,7 +124,7 @@
    <position max="2,3,0" method="uniform" min="-2,-3,0"/>
    <orientation max="360,0,0" method="uniform" min="0,0,0"/>
    <!-- You can change the number of LightBots changing the 'quantity' attribute -->
-   <entity base_num="1" max_trials="100" quantity="5">
+   <entity base_num="1" max_trials="100" quantity="10">
     <foot-bot id="lgt-fb" rab_range="1.25">
      <controller config="lightbot"/>
     </foot-bot>
