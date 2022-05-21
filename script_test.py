@@ -111,7 +111,7 @@ def test_scalab():
     counter=0
     init_swarm_size = 5
     d = (3, 2, 1) # To define
-    for i in range(10, 15):
+    for i in [10,15]:
     #for i in range(1, 2):
         swarm_size = i*init_swarm_size
         total = sum(d[j] for j in range(len(d)))
