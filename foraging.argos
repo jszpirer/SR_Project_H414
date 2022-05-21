@@ -118,7 +118,7 @@
       <position method="uniform" min="-2,-3,0" max="2,3,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <!-- You can change the number of CamBots changing the 'quantity' attribute -->
-      <entity quantity="3" max_trials="100" base_num="1">
+      <entity quantity="14" max_trials="100" base_num="1">
         <foot-bot id="cam-fb" rab_range="1.25">
           <controller config="cambot" />
         </foot-bot>
@@ -140,7 +140,7 @@
       <position method="uniform" min="-2,-3,0" max="2,3,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <!-- You can change the number of LightBots changing the 'quantity' attribute -->
-      <entity quantity="1" max_trials="100" base_num="1">
+      <entity quantity="2" max_trials="100" base_num="1">
         <foot-bot id="lgt-fb" rab_range="1.25">
           <controller config="lightbot" />
         </foot-bot>
@@ -182,13 +182,13 @@
   <!-- ****************** -->
   <visualization>
     <!-- To execute ARGoS in batch without visualization, just comment out the 'qt-opengl' section -->
-    <!--qt-opengl lua_editor="true"-->
-      <!--camera-->
-        <!--placements-->
-          <!--placement index="0" position="0,0,6.5" look_at="0,0,0" up="1,0,0" lens_focal_length="20" /-->
-        <!--/placements-->
-      <!--/camera-->
-    <!--/qt-opengl-->
+    <qt-opengl lua_editor="true">
+      <camera>
+        <placements>
+          <placement index="0" position="0,0,6.5" look_at="0,0,0" up="1,0,0" lens_focal_length="20" />
+        </placements>
+      </camera>
+    </qt-opengl>
   </visualization>
 
 </argos-configuration>
