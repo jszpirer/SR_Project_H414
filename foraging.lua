@@ -40,13 +40,6 @@ DROPPING_TIMEOUT = 50 -- adapt this value to drop faster (with potentially unsuc
 dropping_timer = 0
 dropping_angle = 0
 
-ACCEPT_DIST = 10
-FLOCKING_TRIGGER_THRESHOLD = 30
-NEIGHBORS_AT_TARG_DIST = 6
-FLOCKING_TRIGGER_COUNTER = 0
-FLOCKING_CONDITION = 0
-FLOCKING = 0
-
 -- Variables for lightbots
 looking_for_light = true
 
@@ -61,15 +54,13 @@ walk_counter = 0
 
 --[[ Control function function for the CamBot robots. ]]
 function cambot_control()
- 	-- Insert your code here, after this line
-	-- This robot will be in the middle of the line
+	-- Global function for cambots. All the states are detailed in the report and are a condition in the if statement that follows.
 	robot.range_and_bearing.set_data(3, 0)
 	if (looking_for_object) then
 		index_of_blob = 1
 		best_distance = 1000
 		object_found = false 
 		robot.colored_blob_omnidirectional_camera.enable()
-		--log("Number of blobs" .. #robot.colored_blob_omnidirectional_camera)
 		for i=1, #robot.colored_blob_omnidirectional_camera do
 			if robot.colored_blob_omnidirectional_camera[i].color.red == 255.0 then
 				if robot.colored_blob_omnidirectional_camera[i].color.blue == 0.0 then
@@ -89,12 +80,14 @@ function cambot_control()
 		end
 		for i = 1, #robot.range_and_bearing do
 			if robot.range_and_bearing[i].data[1] == 3 then
+				-- Tries to avoid annoying the groundbots that are circling around the nest.
 				speeds = ComputeSpeedFromAngle(math.pi)
 				robot.wheels.set_velocity(speeds[1], speeds[2])
 			end
 		end
 		tube_is_transported = is_tube_transported()
 		if (tube_is_transported) then
+			-- Another robot has been detected.
 			object_found = false
 			STOP = false
 		end
@@ -107,19 +100,14 @@ function cambot_control()
 				object_found = false
 				looking_for_object = false
 			else
-				--log("Closer")
-				-- On se dirige vers l'objet le plus proche (distance)
 				angle = robot.colored_blob_omnidirectional_camera[index_of_blob].angle
 				if (angle < 3.14) and (angle > 0) then
-					--log ("Direction tubes")
 					robot.wheels.set_velocity(10, 20)
 				else
-					--log ("Direction tubes")
 					robot.wheels.set_velocity(20, 10)
 				end
 			end
 		else
-			--log("Random walk")
 			random_walk(20)
 		end 
 	
@@ -135,20 +123,12 @@ function cambot_control()
 
 
 
-	-- Next section is about gripping the object and transport it
+	-- Next section is about gripping the object.
 	elseif (object_to_grip) then
-		--log("Tube gripped")
 		lock_object()
-		--robot.gripper.lock_positive()
-		--robot.gripper.lock_negative()
-		--object_to_grip = false
-		--object_gripped = true
-		--GRIP_COUNTER = 0
-		--robot.range_and_bearing.set_data(1, 4)
-		--turn_around = true
 	
 
-	-- Need to turn around and go to the nest
+	-- Need to turn around and go to the lightbots.
 	elseif (turn_around) then
 		log("Turn around")
 		speeds = ComputeSpeedFromAngle(math.pi)
@@ -157,24 +137,12 @@ function cambot_control()
 		turn_around = false
 
 
+	-- Is looking for the lightbots (or groundbots or detecting that it is in the nest).
 	elseif (looking_for_lightbot) then
 		if (object_gripped) then
 			GRIP_COUNTER = GRIP_COUNTER +1
 		end
-		--log("Looking for light bots")
 		random_walk(20)
-		for i = 1, #robot.colored_blob_omnidirectional_camera do
-			if robot.colored_blob_omnidirectional_camera[i].color.red == 255.0 then
-				if robot.colored_blob_omnidirectional_camera[i].color.blue == 0.0 then
-					-- A red tube has been viewed
-					if (not object_gripped) then
-						looking_for_lightbot = false
-						looking_for_object = true
-						break
-					end
-				end
-			end
-		end
 		for i = 1, #robot.range_and_bearing do
 			log("Signal reçu".. robot.range_and_bearing[i].data[1])
 			if robot.range_and_bearing[i].data[4] == 4 then
@@ -184,7 +152,6 @@ function cambot_control()
 					looking_for_object = true
 				end
 				looking_for_lightbot = false
-				log("Lightbot found")
 			elseif robot.range_and_bearing[i].data[1] == 3 then
 				-- Groundbot found, could be good is the object is gripped
 				if (object_gripped) then
@@ -194,17 +161,16 @@ function cambot_control()
 			end
 		end
 		if (tube_in_nest()) then
-			logerr("Arrivé dans le nid plus tôt")
 			looking_for_lightbot = false
 			steps_to_walk = robot.random.uniform_int(8,25)
 			road_to_nest = true
 		elseif (GRIP_COUNTER > MAX_GRIPPED) then
-			log("Transport trop long")
 			looking_for_lightbot = false
 			init_drop_procedure()
 			unlocking_object = true
 		end
-			
+		
+	-- Lightbot has been found. The cambot can go faster.	
 	elseif (lightbot_found) then
 		for i = 1, #robot.range_and_bearing do
 			if robot.range_and_bearing[i].data[4] == 4 then
@@ -217,7 +183,7 @@ function cambot_control()
 			end
 		end
 
-
+	-- Looking for the groundbots that are circling around the nest.
 	elseif (looking_for_grdbot) then
 		GRIP_COUNTER = GRIP_COUNTER +1
 		for i = 1, #robot.range_and_bearing do
@@ -237,26 +203,23 @@ function cambot_control()
 			random_walk(20)
 		end
 		if (tube_in_nest()) then
-			logerr("Arrivé dans le nid plus tôt")
 			looking_for_grdbot = false
 			steps_to_walk = robot.random.uniform_int(8,25)
 			road_to_nest = true
 		elseif (GRIP_COUNTER > MAX_GRIPPED) then
-			log("Transport trop long")
 			looking_for_grdbot = false
 			init_drop_procedure()
 			unlocking_object = true
 		end
 		
 	
-	
+	-- Groundbot has been found. Cambot can speed up to the nest.
 	elseif (grdbot_found) then
 		ground_bots = false
 		for i = 1, #robot.range_and_bearing do
 			if robot.range_and_bearing[i].data[1] == 3 then
 				ground_bots = true
 				angle = robot.range_and_bearing[i].horizontal_bearing
-				log("Angle avec ground".. angle)
 				if (angle > 1.22 and math.pi/2 >= angle) then
 					steps_to_walk = 25
 					grdbot_found = false
@@ -282,47 +245,22 @@ function cambot_control()
 			grdbot_found = false	
 			looking_for_grdbot = true
 		end
-		--if (robot.range_and_bearing[nest_index] ~= nil) then
-			--new_angle = robot.range_and_bearing[nest_index].horizontal_bearing
-			--distance = robot.range_and_bearing[nest_index].range
-			--log("Angle ".. new_angle)
-			--if new_angle > angle_grdbot then
-				-- Ground bot de l'autre côté du nid			
-				--steps_to_walk = 90
-			--else 
-				--steps_to_walk = 40
-			--end
-			--log("Steps to wait")
-			--grdbot_found = false
-			--robot.wheels.set_velocity(0,0)
-			--nest_angle = new_angle
-			--nest_range = robot.range_and_bearing[nest_index].range
-			--road_to_nest = true
-		--end
 
-
+	-- Cambot walks for steps_to_walk before checking if it is still in the nest.
 	elseif (road_to_nest) then
 		steps_to_walk = steps_to_walk - 1
 		log("Steps ".. steps_to_walk) 
 		if steps_to_walk < 0 then
-			--log("Temps de réfléchir")
-			--if (#robot.colored_blob_omnidirectional_camera > 2) then
-				check_if_in_nest = true
-				--init_drop_procedure()
-				--unlocking_object = true
-				road_to_nest = false
-				wait_steps = 30
-			--else
-				--road_to_nest = false
-				--looking_for_grdbot = true
-			--end
+			check_if_in_nest = true
+			road_to_nest = false
+			wait_steps = 30
 		else
 			random_walk(20)
-			--speeds_angle = ComputeSpeedFromAngle(nest_angle)
-			--robot.wheels.set_velocity(speeds_angle[1]+10, speeds_angle[2]+10)
 		end
+	
+	
+	-- Waits a little bit and then checks if it is still in the nest.
 	elseif (check_if_in_nest) then
-		--robot.range_and_bearing.set_data(3, 3)
 		wait_steps = wait_steps - 1
 		if (wait_steps == 0) then
 			logerr("Attente finie")
@@ -336,52 +274,28 @@ function cambot_control()
 				looking_for_grdbot = true
 				check_if_in_nest = false
 			end
-		--if wait_steps < 5 then 
-			--for i = 1, #robot.range_and_bearing do
-				--log("Signal reçu 2".. robot.range_and_bearing[i].data[2])
-				--if robot.range_and_bearing[i].data[2] == 2 then
-					-- Sure we are in the nest?
-					--log("In the nest")
-					--check_if_in_nest = false
-					--init_drop_procedure()
-					--unlocking_object = true
-				--else
-					--if (wait_steps == 0) then
-						--looking_for_grdbot = true
-						--check_if_in_nest = false
-					--end				
-				--end
-			--end
 		else 
 			robot.wheels.set_velocity(0,0)
 		end
 
+	-- Dropping the tube in the nest.
 	elseif (unlocking_object) then
-		log("Unlocking")
-		--angle_tube = nearest_obstacle_angle()
-		--speeds = ComputeSpeedFromAngle(angle_tube)
-		--robot.wheels.set_velocity(speeds[1], speeds[2])
-		--robot.gripper.unlock()
 		drop_object()
 
 	else
 		random_walk(20)			
 	
 	end
-	--robot.range_and_bearing.clear_data()
 end
  
  --[[ Control function function for the GroundBot robots. ]]
 function groundbot_control()
-     -- Insert your code here, after this line
 	-- They need to be looking for the nest
 	if (looking_for_nest) then
-		--log("Looking for nest")
 		nest_found = false
 		for i=1, 4 do
 			value = robot.motor_ground[i].value
 			if (value == 0) then
-				--log("Nest found")
 				nest_found = true
 				looking_for_nest = false
 				walking_around_nest = true
@@ -393,26 +307,9 @@ function groundbot_control()
 			random_walk(20)
 		end
 
-	-- The robot is walking around the nest to determine the size of it.
+	-- The robot is walking around the nest.
 	elseif (walking_around_nest) then
-		--log("Walking around nest")
-		-- On check si y'a un robot dans le nid
 		cambot_viewed = false
-		--for i = 1, #robot.range_and_bearing do
-			--log("Je vois "..robot.range_and_bearing[i].data[3])
-			 --if robot.range_and_bearing[i].data[3] == 3 then
-				-- Need to check the angle of the cambot that is waiting in the nest
-				--angle = robot.range_and_bearing[i].horizontal_bearing
-				--if (angle > 0) then
-					--log("Cambot in nest")
-					--cambot_viewed = true
-					--robot.range_and_bearing.set_data(2, 2)
-				--end
-			--end
-		--end
-		--if (not cambot_viewed) then
-			--robot.range_and_bearing.set_data(2, 3)
-		--end
 		robot.range_and_bearing.set_data(1, 3)
 		vect = {fl=1, bl=1, br=1, fr=1}
 		vect.fl = robot.motor_ground[1].value
@@ -456,25 +353,23 @@ function groundbot_control()
 			end
 		end
 	
+	-- The groundbot is walking very slowly to avoid an obstacle seen in front of itself.
 	elseif (avoiding_obstacle) then
 		walk_counter = walk_counter - 1
 		if (walk_counter < 0) then
 			avoiding_obstacle = false
 			looking_for_nest = true
 		else
-			--robot.wheels.set_velocity(0,0)
 			random_walk(2)
 		end
 	end
-	--robot.range_and_bearing.clear_data()
 end
   
   --[[ Control function function for the LightBot robots. ]]
 function lightbot_control()
-     -- Insert your code here, after this line
+     -- The lightbot is always looking for the light, if it is found then it tries to go closer.
 	robot.range_and_bearing.set_data(4, 4)
 	if (looking_for_light) then
-		--log("Looking for light")
 		light_found = false
 		best_value = 0
 		index = 1
@@ -492,10 +387,8 @@ function lightbot_control()
 				looking_for_light = false
 			end
 		end
-		--log("For done")
 		if (light_found) then
 			if (STOP) then
-				--log("Light stopped")
 				robot.wheels.set_velocity(0, 0)
 			else
 				-- Need to analyze the position of the light to adjust the velocity
@@ -509,8 +402,7 @@ function lightbot_control()
 					robot.wheels.set_velocity(10, 5)
 				end
 			end
-		else
-			--log("Light Random walk")			
+		else			
 			random_walk(20)
 		end
 	end
@@ -540,12 +432,7 @@ function check_robot_type()
         is_groundbot = false
         is_lightbot  = true
         led_color = "magenta"
-    end
-
-    -- this line is to help you with visualizing the roles in the swarm
-    -- comment or remove this line before performing your experiments
-    --robot.leds.set_all_colors(led_color)
-   
+    end   
 end
 
 --[[ This function is executed every time you press the 'execute' button ]]
@@ -575,6 +462,7 @@ function step()
    -- If no robot type is found, nothing will happen
 end
 
+-- Function of the practicals to random walk in the box (modified in the act part).
 function random_walk(speed)
 	-- SENSE
 	obstacle = false
@@ -601,12 +489,6 @@ function random_walk(speed)
 		if(obstacle) then
 			avoid_obstacle = true
 			turning_steps = robot.random.uniform_int(3,8)
-			--turning_steps = 4
-			--if (index < 20) then
-				--turning_right = 1
-			--else 
-				--turning_right = 0
-			--end
 			turning_right = robot.random.bernoulli()
 		end
 	else
@@ -629,81 +511,7 @@ function random_walk(speed)
 	
 end
 
-function count_voisins()
-	number_robot_sensed = 0
-	for i = 1, #robot.range_and_bearing do 
-		if robot.range_and_bearing[i].range < 150 and robot.range_and_bearing[i].data[1]==1 then
-			number_robot_sensed = number_robot_sensed + 1
-		end
-	end
-	if (number_robot_sensed == 2) then
-		two_voisins = true
-	end
-end
-
-function ProcessRAB_LJ()
-	FLOCKING_CONDITION = 0
-	sum_vector = {0,0}
-	neighbors_in_range_counter = 0
-	for i = 1, #robot.range_and_bearing do
-		if (robot.range_and_bearing[i].data[1] == 1) then -- Just the cambots
-			lj_value = ComputeLennardJones(robot.range_and_bearing[i].range)
-			sum_vector[1] = sum_vector[1] + math.cos(robot.range_and_bearing[i].horizontal_bearing)*lj_value
-			sum_vector[2] = sum_vector[2] + math.sin(robot.range_and_bearing[i].horizontal_bearing)*lj_value
-			if(robot.range_and_bearing[i].range < TARGET_DIST + ACCEPT_DIST and robot.range_and_bearing[i].range > TARGET_DIST - ACCEPT_DIST) then
-				neighbors_in_range_counter = neighbors_in_range_counter + 1
-				if (neighbors_in_range_counter >= NEIGHBORS_AT_TARG_DIST) then
-					FLOCKING_CONDITION = 1
-				end
-			end
-		end
-	end
-	return sum_vector
-end
-
-function ComputeLennardJones(distance) 
-	return -(4*EPSILON/distance * (math.pow(TARGET_DIST/distance,4) - math.pow(TARGET_DIST/distance,2)));
-end
-
-function ComputeVectorToTubes()
-	tube_v = {0,0}
-	index_of_blob = 1
-	best_distance = 1000
-	object_found = false 
-	robot.colored_blob_omnidirectional_camera.enable()
-	for i=1, #robot.colored_blob_omnidirectional_camera do
-		if robot.colored_blob_omnidirectional_camera[i].color.red == 255.0 then
-			if robot.colored_blob_omnidirectional_camera[i].color.blue == 0.0 then
-				distance = robot.colored_blob_omnidirectional_camera[i].distance
-				if (distance < best_distance) then
-					best_distance = distance
-					index_of_blob = i
-					object_found = true
-				end
-				if (best_distance < 20) then
-					log("Tube is here")
-					STOP = true
-					object_found = true
-					break
-				end
-			end
-		end
-	end
-	if (object_found) then -- We can compute the real vector to tube
-		tube_v[1] = best_distance * math.cos(robot.colored_blob_omnidirectional_camera[index_of_blob].angle)
-		tube_v[2] = best_distance * math.sin(robot.colored_blob_omnidirectional_camera[index_of_blob].angle)
-		len = math.sqrt(tube_v[1] * tube_v[1] + tube_v[2] * tube_v[2])
-		if (len ~= 0) then
-			tube_v[1] = tube_v[1] / len
-			tube_v[2] = tube_v[2] / len
-		end
-	else -- We just give something to make the robots move
-		tube_v[1] = 1
-		tube_v[2] = 1
-	end
-	return tube_v
-end
-	
+-- Compute the right speed for each wheel to go to a certain direction.
 function ComputeSpeedFromAngle(angle)
 	dotProduct = 0.0;
 	KProp = 20;
@@ -722,31 +530,16 @@ function ComputeSpeedFromAngle(angle)
 	return speeds
 end
 
-function nearest_obstacle_angle()
-	nb_obstacles = 0
-	best_distance = 0
-	best_index = 1
-	for i = 1, 24 do
-		if (robot.proximity[i].value ~= 0) then
-			value = robot.proximity[i].value
-			if (value > best_distance) then
-				best_distance = value
-				best_index = i
-			end
-		end
-	end
-	return robot.proximity[best_index].angle
-end
-
+-- Detects if another robot is around.
 function is_tube_transported()
 	if (#robot.range_and_bearing ~= 0) then
-		--log("Tube is transported")
 		return true
 	else
 		return false
 	end
 end
 
+-- True if the light of the nearest colored object is blue, false otherwise
 function tube_in_nest()
 	closest_distance = 100
 	closest_x = 0
@@ -767,8 +560,8 @@ function tube_in_nest()
 	return false
 end
 
+-- Initialize the procedure to drop or lock an object.
 function init_drop_procedure()
-	log("Procedure")
    -- set timer for dropping
    dropping_timer = DROPPING_TIMEOUT
    -- find the closest LED, this is (most likely) the LED of the object being carried
@@ -785,24 +578,24 @@ function init_drop_procedure()
    dropping_angle = closest_angle
 end
 
+-- After dropping timer, drop an object.
 function drop_object()
    -- this is a multi-step approach that rotates the gripper into position
-   log("Temps restant" .. dropping_timer)
 	if dropping_timer == DROPPING_TIMEOUT then
-      robot.turret.set_position_control_mode()
-      robot.turret.set_rotation(dropping_angle)
-      robot.wheels.set_velocity(0, 0)
-   elseif dropping_timer == 0 then
-      robot.gripper.unlock()
-     	log("Dropped")
+      		robot.turret.set_position_control_mode()
+      		robot.turret.set_rotation(dropping_angle)
+     		robot.wheels.set_velocity(0, 0)
+   	elseif dropping_timer == 0 then
+      		robot.gripper.unlock()
 		unlocking_object = false
 		object_gripped = false
 		GRIP_COUNTER = 0
 		looking_for_object = true
-   end
-   dropping_timer = dropping_timer - 1
+   	end
+   	dropping_timer = dropping_timer - 1
 end
 
+-- Same as drop-object but for locking one.
 function lock_object()
    -- this is a multi-step approach that rotates the gripper into position
    if dropping_timer == DROPPING_TIMEOUT then
@@ -811,10 +604,8 @@ function lock_object()
       robot.wheels.set_velocity(0, 0)
    elseif dropping_timer == 0 then
       robot.gripper.lock_positive()
-     	log("Locked")
 		object_gripped = true
 		GRIP_COUNTER = 0
-		looking_for_lightbot = true
 		looking_for_object = false
 		robot.range_and_bearing.set_data(1, 4)
 		turn_around = true	
