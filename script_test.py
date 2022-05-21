@@ -35,7 +35,7 @@ def get_final_objective_from_output(stdout, stderr):
 
 def test_flex():
     with open('foraging_cp.argos', 'r') as f:
-        data = f‧read()
+        data = f.read()
 
     # Use beautifulsoup to read xml 
     bs_data = BeautifulSoup(data, 'xml')
@@ -61,7 +61,7 @@ def test_flex():
     print('------------------------------')
     print('--Computation on flexibility--')
     print('------------------------------')
-    f = open("results_flex‧csv", 'w')
+    f = open("results_flex.csv", 'w')
     f.write(','.join(['Exp type', 'Seed', 'nb_cam', 'nb_ground', 'nb_light', 'obj'])+'\n')
     f.close() 
     counter=0
