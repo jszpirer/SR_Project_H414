@@ -132,8 +132,8 @@ def test_scalab():
             print("Running on seed", new_seed, "with swarm size", swarm_size)
 
             f = open("scripted_foraging_scal.argos", 'w')
-            f‧write(bs_data.prettify())
-            f‧close()
+            f.write(bs_data.prettify())
+            f.close()
             
             # Run simulation
             res = subprocess.run(["argos3", "-c", "scripted_foraging_scal.argos"], capture_output=True, text=True)
