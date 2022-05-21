@@ -1,0 +1,4 @@
+/home/jeanne/SR_Project_H414/build/CMakeFiles/rebuild_cache.dir
+/home/jeanne/SR_Project_H414/build/CMakeFiles/edit_cache.dir
+/home/jeanne/SR_Project_H414/build/CMakeFiles/foraging.dir
+/home/jeanne/SR_Project_H414/build/CMakeFiles/foraging_autogen.dir
