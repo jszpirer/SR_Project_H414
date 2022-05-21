@@ -144,12 +144,12 @@ def test_scalab():
 
 
 def main():
-    flex = threading.Thread(target=test_flex)
-    flex.start()
+    #flex = threading.Thread(target=test_flex)
+    "flex.start()
     scal = threading.Thread(target=test_scalab)
     scal.start()
 
-    flex.join()
+    #flex.join()
     scal.join()
 
 
