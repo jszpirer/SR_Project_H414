@@ -110,7 +110,7 @@ def test_scalab():
     counter=0
     init_swarm_size = 5
     d = (3, 2, 1) # To define
-    for i in range(15,20):
+    for i in range(16,20):
     #for i in range(1, 2):
         swarm_size = i*init_swarm_size
         total = sum(d[j] for j in range(len(d)))
@@ -121,7 +121,7 @@ def test_scalab():
 
         # Write new distribution to .argos
         write_bots_number(bs_data, nb_bots)
-        for k in range(10):
+        for k in range(3):
         #for k in range(1):
             new_seed = random.randint(1, 99999)
             write_seed(bs_data, new_seed)
