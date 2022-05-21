@@ -52,12 +52,9 @@ def test_flex():
             (3,1,2),
             (3,2,2)
             ]
-    distributions = [
-            (1,1,2),
+    distributions = [(1,1,2),
             (3,1,1),
-            (3,2,1)
-            ]
-    #distributions = [(1,1,1)]
+            (3,2,1)]
     print('------------------------------')
     print('--Computation on flexibility--')
     print('------------------------------')
@@ -141,7 +138,7 @@ def test_scalab():
             resume_list = [str(i),'scalability', str(new_seed), str(nb_cam), str(nb_ground), str(nb_lights), str(obj)]
             print('Computed ' + ';'.join(resume_list))
             counter += 1
-            f = open("results_scalab.csv", 'a')
+            f = open("results_scal.csv", 'a')
             f.write(','.join(resume_list)+'\n')
             f.close() 
     print('Fin des calculs')
